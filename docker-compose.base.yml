@@ -1,0 +1,57 @@
+services:
+  rpc:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    container_name: rpc-server
+    ports:
+      - "3001:3000"
+    env_file:
+      - .env.docker
+
+  litellm:
+    image: litellm/litellm:v1.74.3-nightly
+    restart: unless-stopped
+    container_name: litellm
+    ports:
+      - "4000:4000"
+    volumes:
+      - ./litellm-config.yaml:/app/config.yaml
+    env_file:
+      - .env.docker
+    command:
+      ["--config", "/app/config.yaml", "--port", "4000", "--num_workers", "8"]
+
+  db:
+    image: postgres:16
+    restart: unless-stopped
+    container_name: litellm_db
+    env_file:
+      - .env.docker
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -d litellm -U llmproxy"]
+      interval: 1s
+      timeout: 5s
+      retries: 10
+
+  qdrant:
+    image: qdrant/qdrant:v1.14.1-unprivileged
+    restart: unless-stopped
+    container_name: qdrant_db
+    ports:
+      - 6333:6333
+    env_file:
+      - .env
+    volumes:
+      - qdrant_data:/qdrant/storage:z
+
+volumes:
+  prometheus_data:
+    driver: local
+  postgres_data:
+    name: litellm_postgres_data
+  qdrant_data:
+    driver: local
