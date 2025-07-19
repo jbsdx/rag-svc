@@ -3,6 +3,7 @@ import axios from 'axios';
 import { v4 } from 'uuid';
 
 import { Splitter } from './chunk';
+import { logger } from '../logger';
 
 export class RAGService {
     client: QdrantClient;
@@ -28,6 +29,7 @@ export class RAGService {
         this.client = new QdrantClient({
             url: this.dbUrl
         });
+        logger.info('Connecting to Qdrant database');
     }
 
     /**
@@ -116,7 +118,12 @@ export class RAGService {
         });
         const chunks = splitter.split(config.text);
 
-        console.log(chunks);
+        logger.info('Created text chunks', {
+            service: 'RAG',
+            splitter: {
+                size: chunks.length
+            }
+        });
 
         for (const chunk of chunks) {
             let chunkData = chunk;
@@ -164,7 +171,9 @@ export class RAGService {
     }) {
         const data: number[] = await this.generateEmbeddings(config.text);
         if (data.length === 0) {
-            console.warn('Received empty embedding data');
+            logger.warn('Received empty embedding data', {
+                service: 'RAG'
+            });
             return [];
         }
         const filter = { must: [] };
@@ -246,8 +255,6 @@ export class RAGService {
 
         prompt += config.text;
 
-        console.log('Using prompt', prompt);
-
         const payload = {
             prompt,
             model: config.options?.model ?? this.modelName,
@@ -301,7 +308,10 @@ export class RAGService {
             payload['format'] = JSON.parse(config.options.format);
         }
 
-        console.log('payload', payload);
+        logger.log('Using generation payload', {
+            service: 'RAG',
+            payload
+        });
 
         const response = await axios.post(url, payload, {
             headers: {
@@ -316,6 +326,11 @@ export class RAGService {
      * Update document payload
      */
     async updateDocumentPayload(collection: string, fileKey: string, metadata: { [key: string]: unknown }, key: string) {
+        logger.info('Updating chunk payload', {
+            collection,
+            fileKey
+        });
+
         return this.client.setPayload(collection, {
             payload: metadata,
             key,

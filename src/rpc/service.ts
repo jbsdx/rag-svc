@@ -1,3 +1,4 @@
+import { logger } from '../logger';
 import { RAGService } from '../rag/service';
 
 export class RouterService {
@@ -7,7 +8,7 @@ export class RouterService {
         this.ragService = new RAGService();
     }
 
-    async findSimilar(config: {
+    async findSimilar(payload: {
         text: string,
         context: Partial<{
             tags: string[],
@@ -17,30 +18,52 @@ export class RouterService {
             limit: number
         }>
     }) {
+
+        logger.info('Find similar chunks', {
+            service: 'RPC',
+            payload
+        });
+
         try {
             const data = await this.ragService.findSimilar({
-                text: config.text,
-                context: config.context
+                text: payload.text,
+                context: payload.context
             });
             return data;
         } catch (error) {
-            console.log(error);
+            logger.error(error);
         }
     }
 
     deleteCollection(name: string) {
+        logger.info('Delete collection', {
+            service: 'RPC',
+            name
+        });
+
         return this.ragService.deleteCollection(name);
     }
 
     deletePointsByKey(name: string, key: string) {
+        logger.info('Delete points by key', {
+            service: 'RPC',
+            name,
+            key
+        });
+
+
         return this.ragService.deletePointsByKey(name, key);
     }
 
     getCollections() {
+        logger.info('Get collections', {
+            service: 'RPC'
+        });
+
         return this.ragService.getCollections();
     }
 
-    async embedText(config: {
+    async embedText(payload: {
         text: string,
         title: string,
         context: Partial<{
@@ -51,23 +74,28 @@ export class RouterService {
             collection: string
         }>
     }) {
+        logger.info('Embed text', {
+            service: 'RPC',
+            payload
+        });
+
         try {
             await this.ragService.embedText({
-                text: config.text,
-                collection: config.context.collection,
+                text: payload.text,
+                collection: payload.context.collection,
                 payload: {
-                    tags: config.context.tags,
-                    key: config.context.key,
-                    type: config.context.type,
-                    title: config.title
+                    tags: payload.context.tags,
+                    key: payload.context.key,
+                    type: payload.context.type,
+                    title: payload.title
                 }
             });
         } catch (error) {
-            console.log(error);
+            logger.error(error);
         }
     }
 
-    async generateText(config: {
+    async generateText(payload: {
         text: string,
         context?: Partial<{
             tags: string[],
@@ -87,17 +115,22 @@ export class RouterService {
             format: string,
         }>
     }): Promise<unknown> {
+        logger.info('Generate text', {
+            service: 'RPC',
+            payload
+        });
+
         try {
             const response = await this.ragService.generateText({
-                text: config.text,
-                context: config.context,
-                options: config.options
+                text: payload.text,
+                context: payload.context,
+                options: payload.options
             });
 
             return response;
         } catch (error) {
             if (error.status) {
-                console.log(error.response.data);
+                logger.error(error.response.data);
                 throw new Error(error.response.data?.error?.message);
             }
 

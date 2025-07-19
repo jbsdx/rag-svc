@@ -4,6 +4,7 @@ import { configDotenv } from 'dotenv';
 
 import { appRouter } from './rpc/router';
 import { createContext } from './rpc/context';
+import { logger } from './logger';
 
 export type AppRouter = typeof appRouter;
 
@@ -12,7 +13,7 @@ configDotenv({
     quiet: true
 });
 
-const port = +process.env.PORT || 3000;
+const PORT = +process.env.PORT || 3000;
 
 const handler = createHTTPHandler({
     createContext: createContext,
@@ -27,10 +28,10 @@ const server = createServer(async (req, res) => {
         const { renderTrpcPanel } = await import('trpc-ui');
 
         const ui = renderTrpcPanel(appRouter, {
-            url: process.env.TRPC_PANEL_URL ?? 'http://localhost:3000',
+            url: `http://localhost:${PORT}`,
             meta: {
-                title: 'AI RCP Service',
-                description: '*AI Service* backend',
+                title: 'RAG - RPC Server',
+                description: 'RPC methods for basic RAG operations',
             },
         });
         res.end(ui);
@@ -45,6 +46,6 @@ const server = createServer(async (req, res) => {
     res.end('Not Found');
 });
 
-server.listen(port, () => {
-    console.log('Server started');
+server.listen(PORT, () => {
+    logger.info('Server started', { service: 'server' });
 });

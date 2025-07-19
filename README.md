@@ -52,7 +52,11 @@ POSTGRES_DB=litellm
 POSTGRES_USER=llmproxy
 POSTGRES_PASSWORD=[change-it]
 
-DATABASE_URL="postgresql://llmproxy:[change-it]@db:5432/litellm"
+# LiteLLM settings
+UI_USERNAME=admin
+UI_PASSWORD=[change-it]
+LITELLM_API_KEY=[change-it]
+DATABASE_URL="postgresql://llmproxy:[change-it]@localhost:5432/litellm"
 STORE_MODEL_IN_DB="True"
 ```
 
@@ -76,7 +80,7 @@ POSTGRES_PASSWORD=[change-it]
 
 # LiteLLM settings
 UI_USERNAME=admin
-UI_PASSWORD=askldfj
+UI_PASSWORD=[change-it]
 LITELLM_API_KEY=[change-it]
 DATABASE_URL="postgresql://llmproxy:[change-it]@db:5432/litellm"
 STORE_MODEL_IN_DB="True"
