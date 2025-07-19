@@ -86,6 +86,12 @@ DATABASE_URL="postgresql://llmproxy:[change-it]@db:5432/litellm"
 STORE_MODEL_IN_DB="True"
 ```
 
+## Ollama
+
+Container uses nvidia gpu as default setting for LLM generations.
+
+Remove the `deploy:` setting from the `docker-compose.llm.yml` for cpu usage.
+
 ## Links
 
 [LiteLLM proxy OpenAI](http://localhost:4000)
