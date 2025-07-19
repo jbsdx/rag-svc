@@ -1,5 +1,6 @@
 import { logger } from '../logger';
 import { RAGService } from '../rag/service';
+import { EmbedTextRequestDto, FindSimilarRequestDto, GenerateTextRequestDto } from './dtos';
 
 export class RouterService {
     ragService: RAGService;
@@ -8,17 +9,7 @@ export class RouterService {
         this.ragService = new RAGService();
     }
 
-    async findSimilar(payload: {
-        text: string,
-        context: Partial<{
-            tags: string[],
-            key: string,
-            type: string,
-            collection: string,
-            limit: number
-        }>
-    }) {
-
+    async findSimilar(payload: FindSimilarRequestDto) {
         logger.info('Find similar chunks', {
             service: 'RPC',
             payload
@@ -63,17 +54,7 @@ export class RouterService {
         return this.ragService.getCollections();
     }
 
-    async embedText(payload: {
-        text: string,
-        title: string,
-        context: Partial<{
-            tags: string[],
-            limit: number,
-            type: string,
-            key: string,
-            collection: string
-        }>
-    }) {
+    async embedText(payload: EmbedTextRequestDto) {
         logger.info('Embed text', {
             service: 'RPC',
             payload
@@ -82,39 +63,15 @@ export class RouterService {
         try {
             await this.ragService.embedText({
                 text: payload.text,
-                collection: payload.context.collection,
-                payload: {
-                    tags: payload.context.tags,
-                    key: payload.context.key,
-                    type: payload.context.type,
-                    title: payload.title
-                }
+                title: payload.title,
+                context: payload.context
             });
         } catch (error) {
             logger.error(error);
         }
     }
 
-    async generateText(payload: {
-        text: string,
-        context?: Partial<{
-            tags: string[],
-            limit: number,
-            type: string,
-            key: string,
-            collection: string
-        }>,
-        options?: Partial<{
-            topK: number,
-            topP: number,
-            minP: number,
-            temperature: number,
-            suffix: string,
-            think: boolean,
-            model: string,
-            format: string,
-        }>
-    }): Promise<unknown> {
+    async generateText(payload: GenerateTextRequestDto): Promise<unknown> {
         logger.info('Generate text', {
             service: 'RPC',
             payload

@@ -4,6 +4,7 @@ import { v4 } from 'uuid';
 
 import { Splitter } from './chunk';
 import { logger } from '../logger';
+import { EmbedTextRequestDto, FindSimilarRequestDto, GenerateTextRequestDto } from 'src/rpc/dtos';
 
 export class RAGService {
     client: QdrantClient;
@@ -98,14 +99,10 @@ export class RAGService {
     /**
      * Embed text and save resulting vectors to the database
      */
-    async embedText(config: {
-        text: string,
-        collection: string,
-        payload: { [key: string]: unknown }
-    }) {
+    async embedText(payload: EmbedTextRequestDto) {
         const collections = await this.getCollections();
 
-        const collectionName = `${config.collection}`;
+        const collectionName = `${payload.context.collection}`;
 
         let createCollection = !collections.some(x => x.name === collectionName);
 
@@ -116,7 +113,7 @@ export class RAGService {
             removeExtraSpaces: true,
             splitter: 'paragraph'
         });
-        const chunks = splitter.split(config.text);
+        const chunks = splitter.split(payload.text);
 
         logger.info('Created text chunks', {
             service: 'RAG',
@@ -128,9 +125,9 @@ export class RAGService {
         for (const chunk of chunks) {
             let chunkData = chunk;
 
-            if (config.payload.title) {
+            if (payload.title) {
                 // add title to each chunk
-                chunkData = `Title: ${config.payload.title}\n\n${chunkData}`;
+                chunkData = `Title: ${payload.title}\n\n${chunkData}`;
             }
 
             // generate vectors from llm provider
@@ -149,7 +146,10 @@ export class RAGService {
                     payload: {
                         timestamp: new Date().toISOString(),
                         source: chunkData,
-                        ...config.payload
+                        tags: payload.context.tags ?? [],
+                        key: payload.context.key,
+                        type: payload.context.type,
+                        title: payload.title
                     }
                 }]
             });
@@ -159,17 +159,8 @@ export class RAGService {
     /**
      * Find similiar text with vector similarity search
      */
-    async findSimilar(config: {
-        text: string,
-        context: Partial<{
-            tags?: string[],
-            collection: string,
-            type?: string,
-            key?: string,
-            limit?: number
-        }>
-    }) {
-        const data: number[] = await this.generateEmbeddings(config.text);
+    async findSimilar(payload: FindSimilarRequestDto) {
+        const data: number[] = await this.generateEmbeddings(payload.text);
         if (data.length === 0) {
             logger.warn('Received empty embedding data', {
                 service: 'RAG'
@@ -178,35 +169,35 @@ export class RAGService {
         }
         const filter = { must: [] };
 
-        if (config.context?.tags?.length > 0) {
+        if (payload.context?.tags?.length > 0) {
             filter.must.push({
                 key: 'tags',
                 match: {
-                    any: config.context.tags
+                    any: payload.context.tags
                 }
             });
         }
 
-        if (config.context?.type) {
+        if (payload.context?.type) {
             filter.must.push({
                 key: 'type',
                 match: {
-                    value: config.context.type
+                    value: payload.context.type
                 }
             });
         }
 
-        if (config.context?.key) {
+        if (payload.context?.key) {
             filter.must.push({
                 key: 'key',
                 match: {
-                    value: config.context.key
+                    value: payload.context.key
                 }
             });
         }
-        return await this.client.search(config.context.collection, {
+        return await this.client.search(payload.context.collection, {
             vector: data,
-            limit: config.context?.limit ?? 20,
+            limit: payload.context?.limit ?? 20,
             filter
         });
     }
@@ -214,33 +205,16 @@ export class RAGService {
     /**
      * Generates response from LLM provider
      */
-    async generateText(config: {
-        text: string,
-        context?: Partial<{
-            tags: string[],
-            collection: string,
-            limit: number
-        }>,
-        options?: Partial<{
-            topK: number,
-            topP: number,
-            minP: number,
-            temperature: number,
-            suffix: string,
-            think: boolean,
-            model: string,
-            format: string
-        }>
-    }): Promise<unknown> {
+    async generateText(payload: GenerateTextRequestDto): Promise<unknown> {
         const url = `${this.llmProxyUrl}/completions`;
         const apiKey = process.env.LITELLM_API_KEY;
 
         let prompt = '';
 
-        if (config.context) {
+        if (payload.context) {
             const result = await this.findSimilar({
-                text: config.text,
-                context: config.context
+                text: payload.text,
+                context: payload.context
             });
 
             if (result.length > 0) {
@@ -253,36 +227,36 @@ export class RAGService {
             prompt += 'User input:\n\n';
         }
 
-        prompt += config.text;
+        prompt += payload.text;
 
-        const payload = {
+        const _payload = {
             prompt,
-            model: config.options?.model ?? this.modelName,
-            suffix: config.options?.suffix ?? undefined,
-            think: config.options?.think ?? false,
+            model: payload.options?.model ?? this.modelName,
+            suffix: payload.options?.suffix ?? undefined,
+            think: payload.options?.think ?? false,
             stream: false,
             options: {
                 keep_alive: '5m',
-                temperature: config.options?.temperature ?? 0.8,
+                temperature: payload.options?.temperature ?? 0.8,
                 seed: 0,
                 /**
                  * Reduces the probability of generating nonsense. 
                  * A higher value (e.g. 100) will give more diverse answers, 
                  * while a lower value (e.g. 10) will be more conservative.
                  */
-                top_k: config.options?.topK ?? 40,
+                top_k: payload.options?.topK ?? 40,
                 /**
                  * Works together with top-k. 
                  * A higher value (e.g., 0.95) will lead to more diverse text, 
                  * while a lower value (e.g., 0.5) 
                  * will generate more focused and conservative text. (Default: 0.9)
                  */
-                top_p: config.options?.topP ?? 0.9,
-                min_p: config.options?.minP ?? 0
+                top_p: payload.options?.topP ?? 0.9,
+                min_p: payload.options?.minP ?? 0
             }
         };
 
-        if (config.options?.format) {
+        if (_payload.options?.['format']) {
             /** Example: {
                 "type": "object",
                 "properties": {
@@ -305,15 +279,15 @@ export class RAGService {
                     "happyEnding"
                 ]
             } */
-            payload['format'] = JSON.parse(config.options.format);
+            payload['format'] = JSON.parse(payload.options.format);
         }
 
         logger.log('Using generation payload', {
             service: 'RAG',
-            payload
+            payload: _payload
         });
 
-        const response = await axios.post(url, payload, {
+        const response = await axios.post(url, _payload, {
             headers: {
                 Authorization: `Bearer ${apiKey}`
             }
