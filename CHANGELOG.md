@@ -1,3 +1,10 @@
+## 0.2.0 (2025-07-20)
+
+* feat(api): changed trpc to ts-rest ([3032a9b](https://github.com/jbsdx/rag-svc/commit/3032a9b))
+* chore: add licence ([cd207a5](https://github.com/jbsdx/rag-svc/commit/cd207a5))
+
+
+
 ## <small>0.1.1 (2025-07-19)</small>
 
 * docs: update README ([09e6b12](https://github.com/jbsdx/rag-svc/commit/09e6b12))
