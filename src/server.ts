@@ -1,51 +1,29 @@
-import { createHTTPHandler } from '@trpc/server/adapters/standalone';
-import { createServer } from 'http';
+import express from 'express';
+import bodyParser from 'body-parser';
+import { createExpressEndpoints } from '@ts-rest/express';
 import { configDotenv } from 'dotenv';
 
-import { appRouter } from './rpc/router';
-import { createContext } from './rpc/context';
 import { logger } from './logger';
-
-export type AppRouter = typeof appRouter;
+import { contract } from './api/contract';
+import { authenticateRequest } from './api/auth';
+import { router } from './api/router';
 
 configDotenv({
     override: true,
     quiet: true
 });
 
-const PORT = +process.env.PORT || 3000;
+const port = +process.env.PORT || 3000;
+const app = express();
 
-const handler = createHTTPHandler({
-    createContext: createContext,
-    router: appRouter,
-    basePath: '/',
+app.use(bodyParser.urlencoded({ extended: false }));
+app.use(bodyParser.json());
+app.use(authenticateRequest);
+
+createExpressEndpoints(contract, router, app, {
+    logInitialization: true
 });
 
-const server = createServer(async (req, res) => {
-
-    if (process.env.NODE_ENV !== 'prod' && req.url?.startsWith('/ui')) {
-        // Dynamically import renderTrpcPanel
-        const { renderTrpcPanel } = await import('trpc-ui');
-
-        const ui = renderTrpcPanel(appRouter, {
-            url: `http://localhost:${PORT}`,
-            meta: {
-                title: 'RAG - RPC Server',
-                description: 'RPC methods for basic RAG operations',
-            },
-        });
-        res.end(ui);
-        return;
-    }
-
-    if (req.url?.startsWith('/')) {
-        return handler(req, res);
-    }
-
-    res.statusCode = 404;
-    res.end('Not Found');
-});
-
-server.listen(PORT, () => {
-    logger.info('Server started', { service: 'server' });
+app.listen(port, () => {
+    logger.info(`Listening at http://localhost:${port}`);
 });

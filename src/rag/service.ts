@@ -4,12 +4,16 @@ import { v4 } from 'uuid';
 
 import { Splitter } from './chunk';
 import { logger } from '../logger';
-import { EmbedTextRequestDto, FindSimilarRequestDto, GenerateTextRequestDto } from 'src/rpc/dtos';
+import { EmbedTextRequestDto, FindSimilarRequestDto, GenerateTextRequestDto } from 'src/api/dtos';
 
 export class RAGService {
     client: QdrantClient;
     modelName = 'ollama/llama3.1:8b';
     embeddingModel = 'ollama3';
+
+    constructor() {
+        this.initDatabase();
+    }
 
     get llmProxyUrl() {
         return process.env.LLM_PROXY_URL ?? 'http://localhost:4000';
@@ -17,10 +21,6 @@ export class RAGService {
 
     get dbUrl() {
         return process.env.VECTOR_DB_URL ?? 'http://localhost:6333';
-    }
-
-    constructor() {
-        this.initDatabase();
     }
 
     /**
@@ -81,8 +81,8 @@ export class RAGService {
     /**
      * Delete points by key identifier
      */
-    deletePointsByKey(collection: string, key: string) {
-        return this.client.delete(collection, {
+    async deletePointsByKey(collection: string, key: string) {
+        await this.client.delete(collection, {
             filter: {
                 must: [
                     {
@@ -94,6 +94,7 @@ export class RAGService {
                 ]
             }
         });
+        return true;
     }
 
     /**
@@ -282,7 +283,7 @@ export class RAGService {
             payload['format'] = JSON.parse(payload.options.format);
         }
 
-        logger.log('Using generation payload', {
+        logger.info('Using generation payload', {
             service: 'RAG',
             payload: _payload
         });

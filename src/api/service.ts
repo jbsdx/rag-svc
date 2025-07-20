@@ -42,7 +42,6 @@ export class RouterService {
             key
         });
 
-
         return this.ragService.deletePointsByKey(name, key);
     }
 

@@ -1,8 +1,8 @@
-import * as trpcNext from '@trpc/server/adapters/next';
+import { Request, Response, NextFunction } from 'express';
 
 import { logger } from '../logger';
 
-export async function createContext({ req }: trpcNext.CreateNextContextOptions) {
+export async function authenticateRequest(req: Request, _res: Response, next: NextFunction) {
     // Create context based on the request object
     // Will be available as `ctx` in all resolvers
     async function validateApiKey() {
@@ -10,11 +10,9 @@ export async function createContext({ req }: trpcNext.CreateNextContextOptions) 
     }
     const isAuthorized = await validateApiKey();
 
-    if (!isAuthorized)
+    if (!isAuthorized) {
         logger.warn('Unauthorized rpc request');
-
-    return {
-        isAuthorized,
-    };
+        next('Unauthorized');
+    }
+    next();
 }
-export type Context = Awaited<ReturnType<typeof createContext>>;
