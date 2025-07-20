@@ -56,7 +56,10 @@ const GenerateTextResponse = z.object({
         z.object({
             text: z.string()
         })
-    )
+    ),
+    usage: z.object({
+        completion_tokens: z.number()
+    })
 });
 
 const FindSimilarQuery = z.object({
@@ -123,6 +126,6 @@ export const contract = c.router({
         responses: {
             200: FindSimilarResponse,
         },
-        summary: 'Generate text complection',
+        summary: 'Find similar text chunks',
     },
 });

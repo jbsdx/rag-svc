@@ -11,7 +11,7 @@ export class RouterService {
 
     async findSimilar(payload: FindSimilarRequestDto) {
         logger.info('Find similar chunks', {
-            service: 'RPC',
+            service: 'router',
             payload
         });
 
@@ -28,7 +28,7 @@ export class RouterService {
 
     deleteCollection(name: string) {
         logger.info('Delete collection', {
-            service: 'RPC',
+            service: 'router',
             name
         });
 
@@ -37,7 +37,7 @@ export class RouterService {
 
     deletePointsByKey(name: string, key: string) {
         logger.info('Delete points by key', {
-            service: 'RPC',
+            service: 'router',
             name,
             key
         });
@@ -55,7 +55,7 @@ export class RouterService {
 
     async embedText(payload: EmbedTextRequestDto) {
         logger.info('Embed text', {
-            service: 'RPC',
+            service: 'router',
             payload
         });
 
@@ -72,7 +72,7 @@ export class RouterService {
 
     async generateText(payload: GenerateTextRequestDto): Promise<unknown> {
         logger.info('Generate text', {
-            service: 'RPC',
+            service: 'router',
             payload
         });
 
