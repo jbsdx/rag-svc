@@ -257,30 +257,9 @@ export class RAGService {
             }
         };
 
-        if (_payload.options?.['format']) {
-            /** Example: {
-                "type": "object",
-                "properties": {
-                    "description": {
-                        "type": "string",
-                        "description": "The detailed event description"
-                    },
-                     "title": {
-                        "type": "string",
-                        "description": "The title of the story"
-                    },
-                    "happyEnding": {
-                        "type": "boolean",
-                        "description": "Does the story include a happy ending?"
-                    }
-                },
-                "required": [
-                    "description",
-                    "title",
-                    "happyEnding"
-                ]
-            } */
-            payload['format'] = JSON.parse(payload.options.format);
+        if (payload.options?.['format']) {
+            // JSON schema expected
+            _payload['format'] = JSON.parse(payload.options.format);
         }
 
         logger.info('Using generation payload', {

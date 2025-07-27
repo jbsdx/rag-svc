@@ -1,6 +1,12 @@
 import { initContract } from '@ts-rest/core';
 import { z } from 'zod';
 
+export type SecurityRequirementObject = Record<string, string[]>;
+
+const openApiSecurity: SecurityRequirementObject[] = [{
+    ApiKey: []
+}];
+
 const c = initContract();
 
 const CollectionName = z.string().describe('The collection name');
@@ -21,34 +27,34 @@ const DeletePointsRequest = z.object({
 });
 
 const Context = z.object({
-    tags: z.array(z.string()).optional(),
+    collection: CollectionName,
     key: z.string().optional(),
-    type: z.string().optional(),
     limit: z.number().optional(),
-    collection: CollectionName
+    tags: z.array(z.string()).optional(),
+    type: z.string().optional()
 }).describe('Context settings');
 
 const GenerationOptions = z.object({
-    temperature: z.number().optional(),
-    topK: z.number().optional(),
-    topP: z.number().optional(),
+    format: z.string().optional(),
     minP: z.number().optional(),
-    suffix: z.string().optional(),
-    think: z.boolean().optional(),
     model: z.string().optional(),
-    format: z.string().optional()
+    suffix: z.string().optional(),
+    temperature: z.number().optional(),
+    think: z.boolean().optional(),
+    topK: z.number().optional(),
+    topP: z.number().optional()
 }).describe('Additional LLM options');
 
 const EmbedTextRequest = z.object({
+    context: Context,
     text: z.string().nonempty(),
-    title: z.string().optional(),
-    context: Context
+    title: z.string().optional()
 });
 
 const GenerateTextRequest = z.object({
-    text: z.string(),
     context: Context.optional(),
-    options: GenerationOptions.optional()
+    options: GenerationOptions.optional(),
+    text: z.string()
 });
 
 const GenerateTextResponse = z.object({
@@ -63,69 +69,101 @@ const GenerateTextResponse = z.object({
 });
 
 const FindSimilarQuery = z.object({
-    text: z.string().nonempty(),
-    context: Context
+    context: Context,
+    text: z.string().nonempty()
 });
 
 const FindSimilarResponse = z.array(
     z.object({
-        score: z.number(),
-        payload: z.record(z.string(), z.unknown())
+        payload: z.record(z.string(), z.unknown()),
+        score: z.number()
     })
 );
 
+
+
 export const contract = c.router({
     deleteCollection: {
+        body: DeleteCollectionRequest,
         method: 'POST',
         path: '/deleteCollection',
-        body: DeleteCollectionRequest,
+        description: 'Delete vector collection',
         responses: {
             200: SuccessResponse,
+        },
+        metadata: {
+            openApiSecurity,
+            openApiTags: ['RAG']
         },
         summary: 'Delete collection by name',
     },
     deletePoints: {
+        body: DeletePointsRequest,
         method: 'POST',
         path: '/deletePoints',
-        body: DeletePointsRequest,
+        description: 'Delete points from vector collection',
         responses: {
             200: SuccessResponse,
+        },
+        metadata: {
+            openApiSecurity,
+            openApiTags: ['RAG']
         },
         summary: 'Delete points from collection by key identifier',
     },
-    getCollections: {
-        method: 'GET',
-        path: '/getCollections',
-        responses: {
-            200: z.array(Collection),
-        },
-        summary: 'Get all collections',
-    },
     embedText: {
+        body: EmbedTextRequest,
         method: 'POST',
         path: '/embedText',
-        body: EmbedTextRequest,
+        description: 'Embed text to vector collection',
         responses: {
             200: SuccessResponse,
         },
-        summary: 'Embed text to vector database',
-    },
-    generateText: {
-        method: 'POST',
-        path: '/generateText',
-        body: GenerateTextRequest,
-        responses: {
-            200: GenerateTextResponse,
+        metadata: {
+            openApiSecurity,
+            openApiTags: ['RAG']
         },
-        summary: 'Generate text complection',
+        summary: 'Embed text to vector database',
     },
     findSimilar: {
         method: 'GET',
         path: '/findSimilar',
         query: FindSimilarQuery,
+        description: 'Find similiar text chunks',
         responses: {
             200: FindSimilarResponse,
         },
-        summary: 'Find similar text chunks',
+        metadata: {
+            openApiSecurity,
+            openApiTags: ['RAG']
+        },
+        summary: 'Generate text complection',
+    },
+    generateText: {
+        body: GenerateTextRequest,
+        method: 'POST',
+        path: '/generateText',
+        description: 'Generate text with LLM provider',
+        responses: {
+            200: GenerateTextResponse,
+        },
+        metadata: {
+            openApiSecurity,
+            openApiTags: ['RAG']
+        },
+        summary: 'Generate text complection',
+    },
+    getCollections: {
+        method: 'GET',
+        path: '/getCollections',
+        description: 'Get vector collections',
+        summary: 'Get vector collections',
+        metadata: {
+            openApiSecurity,
+            openApiTags: ['RAG']
+        },
+        responses: {
+            200: z.array(Collection),
+        },
     },
 });

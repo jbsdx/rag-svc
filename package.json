@@ -3,15 +3,17 @@
   "version": "0.2.0",
   "license": "MIT",
   "scripts": {
+    "prestart": "npm run build-swagger",
     "start": "PORT=3003 npx nodemon --ignore data/ src/server.ts",
     "build": "npx tsc",
     "docker": "npm run docker-with-llm",
     "docker-with-llm": "docker compose -f docker-compose.base.yml -f docker-compose.llm.yml up",
     "docker-build": "docker compose -f docker-compose.base.yml -f docker-compose.llm.yml build",
+    "build-swagger": "npx ts-node open-api/build-swagger.ts",
     "version": "conventional-changelog && git add CHANGELOG.md"
   },
   "author": "JB",
-  "description": "RAG - RCP server",
+  "description": "RAG API Service",
   "types": "dist/server.d.ts",
   "files": [
     "dist"
@@ -20,9 +22,11 @@
     "@qdrant/js-client-rest": "^1.14.1",
     "@ts-rest/core": "^3.52.1",
     "@ts-rest/express": "^3.52.1",
+    "@ts-rest/open-api": "^3.52.1",
     "axios": "^1.10.0",
     "dotenv": "^17.1.0",
     "express": "^4",
+    "swagger-ui-express": "^5.0.1",
     "uuid": "^11.1.0",
     "winston": "^3.17.0",
     "zod": "^3.19.1"
@@ -31,6 +35,7 @@
     "@eslint/js": "^9.30.1",
     "@types/express": "^4",
     "@types/node": "^24.0.10",
+    "@types/swagger-ui-express": "^4.1.8",
     "conventional-changelog": "^7.1.1",
     "eslint": "^9.30.1",
     "globals": "^16.3.0",

@@ -1,0 +1,461 @@
+{
+  "openapi": "3.0.2",
+  "paths": {
+    "/deleteCollection": {
+      "post": {
+        "description": "Delete vector collection",
+        "summary": "Delete collection by name",
+        "tags": [
+          "RAG"
+        ],
+        "parameters": [],
+        "operationId": "deleteCollection",
+        "requestBody": {
+          "description": "Body",
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "collection": {
+                    "type": "string",
+                    "description": "The collection name"
+                  }
+                },
+                "required": [
+                  "collection"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "200",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "boolean"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "ApiKey": []
+          }
+        ]
+      }
+    },
+    "/deletePoints": {
+      "post": {
+        "description": "Delete points from vector collection",
+        "summary": "Delete points from collection by key identifier",
+        "tags": [
+          "RAG"
+        ],
+        "parameters": [],
+        "operationId": "deletePoints",
+        "requestBody": {
+          "description": "Body",
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "collection": {
+                    "type": "string",
+                    "description": "The collection name"
+                  },
+                  "key": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "collection",
+                  "key"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "200",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "boolean"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "ApiKey": []
+          }
+        ]
+      }
+    },
+    "/embedText": {
+      "post": {
+        "description": "Embed text to vector collection",
+        "summary": "Embed text to vector database",
+        "tags": [
+          "RAG"
+        ],
+        "parameters": [],
+        "operationId": "embedText",
+        "requestBody": {
+          "description": "Body",
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "context": {
+                    "type": "object",
+                    "properties": {
+                      "collection": {
+                        "type": "string",
+                        "description": "The collection name"
+                      },
+                      "key": {
+                        "type": "string"
+                      },
+                      "limit": {
+                        "type": "number"
+                      },
+                      "tags": {
+                        "type": "array",
+                        "items": {
+                          "type": "string"
+                        }
+                      },
+                      "type": {
+                        "type": "string"
+                      }
+                    },
+                    "required": [
+                      "collection"
+                    ],
+                    "description": "Context settings"
+                  },
+                  "text": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "title": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "context",
+                  "text"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "200",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "boolean"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "ApiKey": []
+          }
+        ]
+      }
+    },
+    "/findSimilar": {
+      "get": {
+        "description": "Find similiar text chunks",
+        "summary": "Generate text complection",
+        "tags": [
+          "RAG"
+        ],
+        "parameters": [
+          {
+            "name": "context",
+            "in": "query",
+            "description": "Context settings",
+            "required": true,
+            "style": "deepObject",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "collection": {
+                  "type": "string",
+                  "description": "The collection name"
+                },
+                "key": {
+                  "type": "string"
+                },
+                "limit": {
+                  "type": "number"
+                },
+                "tags": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                "type": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "collection"
+              ]
+            }
+          },
+          {
+            "name": "text",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1
+            }
+          }
+        ],
+        "operationId": "findSimilar",
+        "responses": {
+          "200": {
+            "description": "200",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "payload": {
+                        "type": "object",
+                        "additionalProperties": {}
+                      },
+                      "score": {
+                        "type": "number"
+                      }
+                    },
+                    "required": [
+                      "payload",
+                      "score"
+                    ]
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "ApiKey": []
+          }
+        ]
+      }
+    },
+    "/generateText": {
+      "post": {
+        "description": "Generate text with LLM provider",
+        "summary": "Generate text complection",
+        "tags": [
+          "RAG"
+        ],
+        "parameters": [],
+        "operationId": "generateText",
+        "requestBody": {
+          "description": "Body",
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "context": {
+                    "type": "object",
+                    "properties": {
+                      "collection": {
+                        "type": "string",
+                        "description": "The collection name"
+                      },
+                      "key": {
+                        "type": "string"
+                      },
+                      "limit": {
+                        "type": "number"
+                      },
+                      "tags": {
+                        "type": "array",
+                        "items": {
+                          "type": "string"
+                        }
+                      },
+                      "type": {
+                        "type": "string"
+                      }
+                    },
+                    "required": [
+                      "collection"
+                    ],
+                    "description": "Context settings"
+                  },
+                  "options": {
+                    "type": "object",
+                    "properties": {
+                      "format": {
+                        "type": "string"
+                      },
+                      "minP": {
+                        "type": "number"
+                      },
+                      "model": {
+                        "type": "string"
+                      },
+                      "suffix": {
+                        "type": "string"
+                      },
+                      "temperature": {
+                        "type": "number"
+                      },
+                      "think": {
+                        "type": "boolean"
+                      },
+                      "topK": {
+                        "type": "number"
+                      },
+                      "topP": {
+                        "type": "number"
+                      }
+                    },
+                    "description": "Additional LLM options"
+                  },
+                  "text": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "text"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "200",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "choices": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "text": {
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "text"
+                        ]
+                      }
+                    },
+                    "usage": {
+                      "type": "object",
+                      "properties": {
+                        "completion_tokens": {
+                          "type": "number"
+                        }
+                      },
+                      "required": [
+                        "completion_tokens"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "choices",
+                    "usage"
+                  ]
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "ApiKey": []
+          }
+        ]
+      }
+    },
+    "/getCollections": {
+      "get": {
+        "description": "Get vector collections",
+        "summary": "Get vector collections",
+        "tags": [
+          "RAG"
+        ],
+        "parameters": [],
+        "operationId": "getCollections",
+        "responses": {
+          "200": {
+            "description": "200",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "name": {
+                        "type": "string"
+                      }
+                    },
+                    "required": [
+                      "name"
+                    ]
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "ApiKey": []
+          }
+        ]
+      }
+    }
+  },
+  "info": {
+    "title": "RAG Service API",
+    "version": "0.2.0",
+    "description": "RAG - RCP server",
+    "contact": {
+      "name": "JB"
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "ApiKey": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "x-api-key"
+      }
+    }
+  }
+}

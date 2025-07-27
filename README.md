@@ -94,10 +94,10 @@ Remove the `deploy:` setting from the `docker-compose.llm.yml` for cpu usage.
 
 ## Links
 
-[LiteLLM proxy OpenAI](http://localhost:4000)
+[LiteLLM proxy OpenAPI](http://localhost:4000)
 
 [LiteLLM proxy Dashboard](http://localhost:4000/ui)
 
 [Qdrant dashboard](http://localhost:6333/dashboard)
 
-[RPC test UI](http://localhost:3000/api/swagger)
+[OpenAPI UI](http://localhost:3001/swagger)

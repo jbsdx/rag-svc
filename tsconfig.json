@@ -1,6 +1,6 @@
 {
   "include": ["src", "test", "examples"],
-  "exclude": ["data"],
+  "exclude": ["./data", "./open-api"],
   "compilerOptions": {
     "target": "ES2022",
     "lib": [],

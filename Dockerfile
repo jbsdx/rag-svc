@@ -16,4 +16,4 @@ WORKDIR /app
 
 COPY --from=builder /src/ /app
 
-CMD [ "node", "build/server.js" ]
+CMD [ "node", "build/src/server.js" ]
