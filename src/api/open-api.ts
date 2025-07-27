@@ -1,24 +1,18 @@
 import { generateOpenApi } from '@ts-rest/open-api';
 import * as express from 'express';
-
 import * as swaggerUi from 'swagger-ui-express';
-import * as swagger from '../../open-api/swagger.json';
 
 import { contract, SecurityRequirementObject } from './contract';
+import * as swagger from '../../open-api/swagger.json';
 import pck from '../../package.json';
 
-
-const hasCustomTags = (
-    metadata: unknown,
-): metadata is { openApiTags: string[] } => {
+const hasCustomTags = (metadata: unknown): metadata is { openApiTags: string[] } => {
     return (
         !!metadata && typeof metadata === 'object' && 'openApiTags' in metadata
     );
 };
-const hasSecurity = (
-    metadata: unknown,
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-): metadata is { openApiSecurity: SecurityRequirementObject[] } => {
+
+const hasSecurity = (metadata: unknown): metadata is { openApiSecurity: SecurityRequirementObject[] } => {
     return (
         !!metadata && typeof metadata === 'object' && 'openApiSecurity' in metadata
     );
@@ -76,4 +70,3 @@ export function expressSwaggerUi(_req: express.Request, res: express.Response) {
         )
     );
 }
-

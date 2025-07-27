@@ -11,28 +11,11 @@ const c = initContract();
 
 const CollectionName = z.string().describe('The collection name');
 
-const SuccessResponse = z.boolean();
+const SuccessResponse = z.boolean().describe('Success');
 
 const Collection = z.object({
     name: z.string()
-});
-
-const DeleteCollectionRequest = z.object({
-    collection: CollectionName
-});
-
-const DeletePointsRequest = z.object({
-    collection: CollectionName,
-    key: z.string()
-});
-
-const Context = z.object({
-    collection: CollectionName,
-    key: z.string().optional(),
-    limit: z.number().optional(),
-    tags: z.array(z.string()).optional(),
-    type: z.string().optional()
-}).describe('Context settings');
+}).describe('The collection object');
 
 const GenerationOptions = z.object({
     format: z.string().optional(),
@@ -45,14 +28,40 @@ const GenerationOptions = z.object({
     topP: z.number().optional()
 }).describe('Additional LLM options');
 
+const GetCollectionsResponse = z.array(Collection).describe('List of vector collections');
+
+const DeleteCollectionRequest = z.object({
+    collection: CollectionName
+});
+
+const DeletePointsRequest = z.object({
+    collection: CollectionName,
+    key: z.string()
+});
+
+const EmbedContext = z.object({
+    collection: CollectionName,
+    key: z.string(),
+    tags: z.array(z.string()).optional(),
+    type: z.string().optional()
+}).describe('Embedding context options');
+
+const QueryContext = z.object({
+    collection: CollectionName,
+    keys: z.array(z.string()).optional(),
+    limit: z.number().optional(),
+    tags: z.array(z.string()).optional(),
+    type: z.string().optional()
+}).describe('Context query');
+
 const EmbedTextRequest = z.object({
-    context: Context,
+    context: EmbedContext,
     text: z.string().nonempty(),
     title: z.string().optional()
 });
 
 const GenerateTextRequest = z.object({
-    context: Context.optional(),
+    context: QueryContext.optional(),
     options: GenerationOptions.optional(),
     text: z.string()
 });
@@ -66,10 +75,10 @@ const GenerateTextResponse = z.object({
     usage: z.object({
         completion_tokens: z.number()
     })
-});
+}).describe('The text completion response');
 
 const FindSimilarQuery = z.object({
-    context: Context,
+    context: QueryContext,
     text: z.string().nonempty()
 });
 
@@ -78,9 +87,7 @@ const FindSimilarResponse = z.array(
         payload: z.record(z.string(), z.unknown()),
         score: z.number()
     })
-);
-
-
+).describe('List of similar text chunks');
 
 export const contract = c.router({
     deleteCollection: {
@@ -137,7 +144,7 @@ export const contract = c.router({
             openApiSecurity,
             openApiTags: ['RAG']
         },
-        summary: 'Generate text complection',
+        summary: 'Find similiar text chunks',
     },
     generateText: {
         body: GenerateTextRequest,
@@ -163,7 +170,7 @@ export const contract = c.router({
             openApiTags: ['RAG']
         },
         responses: {
-            200: z.array(Collection),
+            200: GetCollectionsResponse,
         },
     },
 });

@@ -100,4 +100,4 @@ Remove the `deploy:` setting from the `docker-compose.llm.yml` for cpu usage.
 
 [Qdrant dashboard](http://localhost:6333/dashboard)
 
-[OpenAPI UI](http://localhost:3001/swagger)
+[OpenAPI UI](http://localhost:3001/api/swagger)
