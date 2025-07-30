@@ -4,7 +4,7 @@ import { v4 } from 'uuid';
 
 import { Splitter } from './chunk';
 import { logger } from '../logger';
-import { EmbedTextRequestDto, FindSimilarRequestDto, GenerateTextRequestDto } from 'src/api/dtos';
+import { EmbedTextRequestDto, FindSimilarRequestDto, GenerateTextRequestDto } from '../api/dtos';
 
 export class RAGService {
     client: QdrantClient;
@@ -15,12 +15,25 @@ export class RAGService {
         this.initDatabase();
     }
 
-    get llmProxyUrl() {
+    private get llmProxyUrl() {
         return process.env.LLM_PROXY_URL ?? 'http://localhost:4000';
     }
 
-    get dbUrl() {
+    private get llmProxyApiKey() {
+        return process.env.LITELLM_API_KEY;
+    }
+
+    private get dbUrl() {
         return process.env.VECTOR_DB_URL ?? 'http://localhost:6333';
+    }
+
+    private get llmProxyClient() {
+        return axios.create({
+            baseURL: this.llmProxyUrl,
+            headers: {
+                Authorization: `Bearer ${this.llmProxyApiKey}`
+            }
+        });
     }
 
     /**
@@ -30,7 +43,7 @@ export class RAGService {
         this.client = new QdrantClient({
             url: this.dbUrl
         });
-        logger.info('Connecting to Qdrant database');
+        logger.info('Connected to vector database');
     }
 
     /**
@@ -56,16 +69,9 @@ export class RAGService {
      * Generate vector embeddings from input text
      */
     async generateEmbeddings(text: string): Promise<number[]> {
-        const url = `${this.llmProxyUrl}/embeddings`;
-        const apiKey = process.env.LITELLM_API_KEY;
-
-        const response = await axios.post(url, {
+        const response = await this.llmProxyClient.post('/embeddings', {
             'input': text,
             'model': this.modelName
-        }, {
-            headers: {
-                Authorization: `Bearer ${apiKey}`
-            }
         });
 
         return response.data.data[0].embedding;
@@ -101,10 +107,12 @@ export class RAGService {
      * Embed text and save resulting vectors to the database
      */
     async embedText(payload: EmbedTextRequestDto) {
+        // load existing vector collections
         const collections = await this.getCollections();
+        const { context, text, title } = payload;
+        const collectionName = `${context.collection}`;
 
-        const collectionName = `${payload.context.collection}`;
-
+        // check if collection name already exists
         let createCollection = !collections.some(x => x.name === collectionName);
 
         const splitter = new Splitter({
@@ -114,7 +122,7 @@ export class RAGService {
             removeExtraSpaces: true,
             splitter: 'paragraph'
         });
-        const chunks = splitter.split(payload.text);
+        const chunks = splitter.split(text);
 
         logger.info('Created text chunks', {
             service: 'RAG',
@@ -126,15 +134,16 @@ export class RAGService {
         for (const chunk of chunks) {
             let chunkData = chunk;
 
-            if (payload.title) {
+            if (title) {
                 // add title to each chunk
-                chunkData = `Title: ${payload.title}\n\n${chunkData}`;
+                chunkData = `Title: ${title}\n\n${chunkData}`;
             }
 
             // generate vectors from llm provider
             const data: number[] = await this.generateEmbeddings(chunkData);
 
             if (createCollection) {
+                // create collection name on first chunk
                 await this.createCollection(collectionName, data.length);
                 createCollection = false;
             }
@@ -147,10 +156,10 @@ export class RAGService {
                     payload: {
                         timestamp: new Date().toISOString(),
                         source: chunkData,
-                        tags: payload.context.tags ?? [],
-                        key: payload.context.key,
-                        type: payload.context.type,
-                        title: payload.title
+                        tags: context.tags ?? [],
+                        key: context.key,
+                        type: context.type,
+                        title: title
                     }
                 }]
             });
@@ -162,6 +171,7 @@ export class RAGService {
      */
     async findSimilar(payload: FindSimilarRequestDto) {
         const data: number[] = await this.generateEmbeddings(payload.text);
+
         if (data.length === 0) {
             logger.warn('Received empty embedding data', {
                 service: 'RAG'
@@ -188,11 +198,11 @@ export class RAGService {
             });
         }
 
-        if (payload.context?.key) {
+        if (payload.context?.keys?.length > 0) {
             filter.must.push({
                 key: 'key',
                 match: {
-                    value: payload.context.key
+                    any: payload.context.keys
                 }
             });
         }
@@ -207,15 +217,13 @@ export class RAGService {
      * Generates response from LLM provider
      */
     async generateText(payload: GenerateTextRequestDto): Promise<unknown> {
-        const url = `${this.llmProxyUrl}/completions`;
-        const apiKey = process.env.LITELLM_API_KEY;
-
+        const { text, context } = payload;
         let prompt = '';
 
         if (payload.context) {
             const result = await this.findSimilar({
-                text: payload.text,
-                context: payload.context
+                text,
+                context
             });
 
             if (result.length > 0) {
@@ -262,16 +270,15 @@ export class RAGService {
             _payload['format'] = JSON.parse(payload.options.format);
         }
 
-        logger.info('Using generation payload', {
+        logger.info('Using payload', {
             service: 'RAG',
-            payload: _payload
-        });
-
-        const response = await axios.post(url, _payload, {
-            headers: {
-                Authorization: `Bearer ${apiKey}`
+            payload: {
+                model: _payload.model
             }
         });
+
+        // Send payload to llm completion endpoint
+        const response = await this.llmProxyClient.post('/completions', _payload);
 
         return response.data;
     }

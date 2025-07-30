@@ -1,6 +1,13 @@
-export interface ContextDto {
+export interface EmbedContextDto {
     tags: string[];
     key: string;
+    type: string;
+    collection: string;
+}
+
+export interface QueryContextDto {
+    tags: string[];
+    keys: string[];
     type: string;
     collection: string;
     limit: number;
@@ -8,13 +15,13 @@ export interface ContextDto {
 
 export interface FindSimilarRequestDto {
     text: string;
-    context: Partial<ContextDto>;
+    context: Partial<QueryContextDto>;
 }
 
 export interface EmbedTextRequestDto {
     text: string;
     title: string;
-    context: Partial<ContextDto>;
+    context: Partial<EmbedContextDto>;
 }
 
 export interface GenerateTextOptionsDto {
@@ -30,6 +37,6 @@ export interface GenerateTextOptionsDto {
 
 export interface GenerateTextRequestDto {
     text: string;
-    context: Partial<ContextDto>;
+    context: Partial<QueryContextDto>;
     options: Partial<GenerateTextOptionsDto>;
 }

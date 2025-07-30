@@ -14,11 +14,12 @@ export class RouterService {
             service: 'router',
             payload
         });
+        const { text, context } = payload;
 
         try {
             const data = await this.ragService.findSimilar({
-                text: payload.text,
-                context: payload.context
+                text,
+                context
             });
             return data;
         } catch (error) {
@@ -58,12 +59,13 @@ export class RouterService {
             service: 'router',
             payload
         });
+        const { text, title, context } = payload;
 
         try {
             await this.ragService.embedText({
-                text: payload.text,
-                title: payload.title,
-                context: payload.context
+                text,
+                title,
+                context
             });
         } catch (error) {
             logger.error(error);
@@ -75,12 +77,13 @@ export class RouterService {
             service: 'router',
             payload
         });
+        const { text, options, context } = payload;
 
         try {
             const response = await this.ragService.generateText({
-                text: payload.text,
-                context: payload.context,
-                options: payload.options
+                text,
+                context,
+                options
             });
 
             return response;
