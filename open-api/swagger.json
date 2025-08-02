@@ -14,28 +14,17 @@
           "description": "Body",
           "content": {
             "application/json": {
-              "schema": {
-                "type": "object",
-                "properties": {
-                  "collection": {
-                    "type": "string",
-                    "description": "The collection name"
-                  }
-                },
-                "required": [
-                  "collection"
-                ]
-              }
+              "schema": {}
             }
           }
         },
         "responses": {
           "200": {
-            "description": "200",
+            "description": "Success",
             "content": {
               "application/json": {
                 "schema": {
-                  "type": "boolean"
+                  "description": "Success"
                 }
               }
             }
@@ -61,32 +50,17 @@
           "description": "Body",
           "content": {
             "application/json": {
-              "schema": {
-                "type": "object",
-                "properties": {
-                  "collection": {
-                    "type": "string",
-                    "description": "The collection name"
-                  },
-                  "key": {
-                    "type": "string"
-                  }
-                },
-                "required": [
-                  "collection",
-                  "key"
-                ]
-              }
+              "schema": {}
             }
           }
         },
         "responses": {
           "200": {
-            "description": "200",
+            "description": "Success",
             "content": {
               "application/json": {
                 "schema": {
-                  "type": "boolean"
+                  "description": "Success"
                 }
               }
             }
@@ -112,58 +86,17 @@
           "description": "Body",
           "content": {
             "application/json": {
-              "schema": {
-                "type": "object",
-                "properties": {
-                  "context": {
-                    "type": "object",
-                    "properties": {
-                      "collection": {
-                        "type": "string",
-                        "description": "The collection name"
-                      },
-                      "key": {
-                        "type": "string"
-                      },
-                      "tags": {
-                        "type": "array",
-                        "items": {
-                          "type": "string"
-                        }
-                      },
-                      "type": {
-                        "type": "string"
-                      }
-                    },
-                    "required": [
-                      "collection",
-                      "key"
-                    ],
-                    "description": "Embedding context options"
-                  },
-                  "text": {
-                    "type": "string",
-                    "minLength": 1
-                  },
-                  "title": {
-                    "type": "string"
-                  }
-                },
-                "required": [
-                  "context",
-                  "text"
-                ]
-              }
+              "schema": {}
             }
           }
         },
         "responses": {
           "200": {
-            "description": "200",
+            "description": "Success",
             "content": {
               "application/json": {
                 "schema": {
-                  "type": "boolean"
+                  "description": "Success"
                 }
               }
             }
@@ -183,54 +116,7 @@
         "tags": [
           "RAG"
         ],
-        "parameters": [
-          {
-            "name": "context",
-            "in": "query",
-            "description": "Context query",
-            "required": true,
-            "style": "deepObject",
-            "schema": {
-              "type": "object",
-              "properties": {
-                "collection": {
-                  "type": "string",
-                  "description": "The collection name"
-                },
-                "keys": {
-                  "type": "array",
-                  "items": {
-                    "type": "string"
-                  }
-                },
-                "limit": {
-                  "type": "number"
-                },
-                "tags": {
-                  "type": "array",
-                  "items": {
-                    "type": "string"
-                  }
-                },
-                "type": {
-                  "type": "string"
-                }
-              },
-              "required": [
-                "collection"
-              ]
-            }
-          },
-          {
-            "name": "text",
-            "in": "query",
-            "required": true,
-            "schema": {
-              "type": "string",
-              "minLength": 1
-            }
-          }
-        ],
+        "parameters": [],
         "operationId": "findSimilar",
         "responses": {
           "200": {
@@ -238,23 +124,6 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "type": "array",
-                  "items": {
-                    "type": "object",
-                    "properties": {
-                      "payload": {
-                        "type": "object",
-                        "additionalProperties": {}
-                      },
-                      "score": {
-                        "type": "number"
-                      }
-                    },
-                    "required": [
-                      "payload",
-                      "score"
-                    ]
-                  },
                   "description": "List of similar text chunks"
                 }
               }
@@ -281,119 +150,17 @@
           "description": "Body",
           "content": {
             "application/json": {
-              "schema": {
-                "type": "object",
-                "properties": {
-                  "context": {
-                    "type": "object",
-                    "properties": {
-                      "collection": {
-                        "type": "string",
-                        "description": "The collection name"
-                      },
-                      "keys": {
-                        "type": "array",
-                        "items": {
-                          "type": "string"
-                        }
-                      },
-                      "limit": {
-                        "type": "number"
-                      },
-                      "tags": {
-                        "type": "array",
-                        "items": {
-                          "type": "string"
-                        }
-                      },
-                      "type": {
-                        "type": "string"
-                      }
-                    },
-                    "required": [
-                      "collection"
-                    ],
-                    "description": "Context query"
-                  },
-                  "options": {
-                    "type": "object",
-                    "properties": {
-                      "format": {
-                        "type": "string"
-                      },
-                      "minP": {
-                        "type": "number"
-                      },
-                      "model": {
-                        "type": "string"
-                      },
-                      "suffix": {
-                        "type": "string"
-                      },
-                      "temperature": {
-                        "type": "number"
-                      },
-                      "think": {
-                        "type": "boolean"
-                      },
-                      "topK": {
-                        "type": "number"
-                      },
-                      "topP": {
-                        "type": "number"
-                      }
-                    },
-                    "description": "Additional LLM options"
-                  },
-                  "text": {
-                    "type": "string"
-                  }
-                },
-                "required": [
-                  "text"
-                ]
-              }
+              "schema": {}
             }
           }
         },
         "responses": {
           "200": {
-            "description": "200",
+            "description": "The text completion response",
             "content": {
               "application/json": {
                 "schema": {
-                  "type": "object",
-                  "properties": {
-                    "choices": {
-                      "type": "array",
-                      "items": {
-                        "type": "object",
-                        "properties": {
-                          "text": {
-                            "type": "string"
-                          }
-                        },
-                        "required": [
-                          "text"
-                        ]
-                      }
-                    },
-                    "usage": {
-                      "type": "object",
-                      "properties": {
-                        "completion_tokens": {
-                          "type": "number"
-                        }
-                      },
-                      "required": [
-                        "completion_tokens"
-                      ]
-                    }
-                  },
-                  "required": [
-                    "choices",
-                    "usage"
-                  ]
+                  "description": "The text completion response"
                 }
               }
             }
@@ -417,22 +184,11 @@
         "operationId": "getCollections",
         "responses": {
           "200": {
-            "description": "200",
+            "description": "List of vector collections",
             "content": {
               "application/json": {
                 "schema": {
-                  "type": "array",
-                  "items": {
-                    "type": "object",
-                    "properties": {
-                      "name": {
-                        "type": "string"
-                      }
-                    },
-                    "required": [
-                      "name"
-                    ]
-                  }
+                  "description": "List of vector collections"
                 }
               }
             }

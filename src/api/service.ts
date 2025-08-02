@@ -1,6 +1,6 @@
 import { logger } from '../logger';
 import { RAGService } from '../rag/service';
-import { EmbedTextRequestDto, FindSimilarRequestDto, GenerateTextRequestDto } from './dtos';
+import { EmbedTextRequestDto, FindSimilarRequestDto, FindSimilarResponseDto, GenerateTextRequestDto, GenerateTextResponseDto, GetCollectionResponseDto, SuccessResponseDto } from './dtos';
 
 export class RouterService {
     ragService: RAGService;
@@ -9,7 +9,7 @@ export class RouterService {
         this.ragService = new RAGService();
     }
 
-    async findSimilar(payload: FindSimilarRequestDto) {
+    async findSimilar(payload: FindSimilarRequestDto): Promise<FindSimilarResponseDto[]> {
         logger.info('Find similar chunks', {
             service: 'router',
             payload
@@ -21,13 +21,19 @@ export class RouterService {
                 text,
                 context
             });
-            return data;
+
+            return data.map(obj => {
+                return {
+                    score: obj.score,
+                    payload: obj.payload
+                };
+            });
         } catch (error) {
             logger.error(error);
         }
     }
 
-    deleteCollection(name: string) {
+    deleteCollection(name: string): Promise<SuccessResponseDto> {
         logger.info('Delete collection', {
             service: 'router',
             name
@@ -36,7 +42,7 @@ export class RouterService {
         return this.ragService.deleteCollection(name);
     }
 
-    deletePointsByKey(name: string, key: string) {
+    deletePointsByKey(name: string, key: string): Promise<SuccessResponseDto> {
         logger.info('Delete points by key', {
             service: 'router',
             name,
@@ -46,7 +52,7 @@ export class RouterService {
         return this.ragService.deletePointsByKey(name, key);
     }
 
-    getCollections() {
+    getCollections(): Promise<GetCollectionResponseDto[]> {
         logger.info('Get collections', {
             service: 'RPC'
         });
@@ -54,7 +60,7 @@ export class RouterService {
         return this.ragService.getCollections();
     }
 
-    async embedText(payload: EmbedTextRequestDto) {
+    async embedText(payload: EmbedTextRequestDto): Promise<SuccessResponseDto> {
         logger.info('Embed text', {
             service: 'router',
             payload
@@ -70,9 +76,10 @@ export class RouterService {
         } catch (error) {
             logger.error(error);
         }
+        return true;
     }
 
-    async generateText(payload: GenerateTextRequestDto): Promise<unknown> {
+    async generateText(payload: GenerateTextRequestDto): Promise<GenerateTextResponseDto> {
         logger.info('Generate text', {
             service: 'router',
             payload

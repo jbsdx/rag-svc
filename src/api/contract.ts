@@ -73,7 +73,7 @@ const GenerateTextResponse = z.object({
         })
     ),
     usage: z.object({
-        completion_tokens: z.number()
+        completionTokens: z.number()
     })
 }).describe('The text completion response');
 

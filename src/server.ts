@@ -15,7 +15,7 @@ configDotenv({
     quiet: true
 });
 
-const swaggerUiPath = process.env.SWAGGER_UI_PATH ?? '/api/swagger';
+const swaggerUiPath = process.env.SWAGGER_UI_PATH ?? '/swagger-ui';
 const port = +process.env.PORT || 3000;
 const app = express();
 
@@ -33,7 +33,7 @@ app.get('/swagger', (req, res) => {
 app.use(swaggerUiPath, swaggerUi.serve, expressSwaggerUi);
 
 // enable x-api-key authentication
-app.use(authenticateRequest);
+app.use('/api', authenticateRequest);
 
 createExpressEndpoints(contract, router, app, {
     logInitialization: true

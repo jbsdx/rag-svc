@@ -55,14 +55,14 @@ export const router = s.router(contract, {
         };
     },
     embedText: async ({ body: { context, text, title } }) => {
-        await service.embedText({
+        const response = await service.embedText({
             context,
             text,
             title
         });
         return {
             status: 200,
-            body: true,
+            body: response,
         };
     },
 });

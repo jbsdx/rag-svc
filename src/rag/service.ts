@@ -4,7 +4,7 @@ import { v4 } from 'uuid';
 
 import { Splitter } from './chunk';
 import { logger } from '../logger';
-import { EmbedTextRequestDto, FindSimilarRequestDto, GenerateTextRequestDto } from '../api/dtos';
+import { EmbedTextRequestDto, FindSimilarRequestDto, GenerateTextRequestDto, GenerateTextResponseDto } from '../api/dtos';
 
 export class RAGService {
     client: QdrantClient;
@@ -80,14 +80,14 @@ export class RAGService {
     /**
      * Deletes collection
      */
-    deleteCollection(name: string) {
+    deleteCollection(name: string): Promise<boolean> {
         return this.client.deleteCollection(name);
     }
 
     /**
      * Delete points by key identifier
      */
-    async deletePointsByKey(collection: string, key: string) {
+    async deletePointsByKey(collection: string, key: string): Promise<boolean> {
         await this.client.delete(collection, {
             filter: {
                 must: [
@@ -106,15 +106,17 @@ export class RAGService {
     /**
      * Embed text and save resulting vectors to the database
      */
-    async embedText(payload: EmbedTextRequestDto) {
-        // load existing vector collections
-        const collections = await this.getCollections();
+    async embedText(payload: EmbedTextRequestDto): Promise<void> {
         const { context, text, title } = payload;
         const collectionName = `${context.collection}`;
+
+        // load existing vector collections
+        const collections = await this.getCollections();
 
         // check if collection name already exists
         let createCollection = !collections.some(x => x.name === collectionName);
 
+        // splitting text into smaller chunks
         const splitter = new Splitter({
             maxLength: 1024,
             minLength: 200,
@@ -216,7 +218,7 @@ export class RAGService {
     /**
      * Generates response from LLM provider
      */
-    async generateText(payload: GenerateTextRequestDto): Promise<unknown> {
+    async generateText(payload: GenerateTextRequestDto): Promise<GenerateTextResponseDto> {
         const { text, context } = payload;
         let prompt = '';
 
@@ -280,7 +282,14 @@ export class RAGService {
         // Send payload to llm completion endpoint
         const response = await this.llmProxyClient.post('/completions', _payload);
 
-        return response.data;
+        return {
+            usage: {
+                completionTokens: response.data.usage.completion_tokens
+            },
+            choices: [{
+                text: response.data.choices[0].text
+            }]
+        };
     }
 
     /**
