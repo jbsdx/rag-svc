@@ -110,7 +110,7 @@
       }
     },
     "/findSimilar": {
-      "get": {
+      "post": {
         "description": "Find similiar text chunks",
         "summary": "Find similiar text chunks",
         "tags": [
@@ -118,6 +118,14 @@
         ],
         "parameters": [],
         "operationId": "findSimilar",
+        "requestBody": {
+          "description": "Body",
+          "content": {
+            "application/json": {
+              "schema": {}
+            }
+          }
+        },
         "responses": {
           "200": {
             "description": "List of similar text chunks",

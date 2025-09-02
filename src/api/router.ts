@@ -28,7 +28,7 @@ export const router = s.router(contract, {
             body: response,
         };
     },
-    findSimilar: async ({ query: { context, text } }) => {
+    findSimilar: async ({ body: { context, text } }) => {
         const response = await service.findSimilar({
             context,
             text

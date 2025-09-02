@@ -40,7 +40,7 @@ export const openApiDocument = generateOpenApi(
         },
     },
     {
-        jsonQuery: true,
+        jsonQuery: false,
         setOperationId: true,
         operationMapper: (operation, appRoute) => ({
             ...operation,

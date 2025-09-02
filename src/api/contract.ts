@@ -133,9 +133,9 @@ export const contract = c.router({
         summary: 'Embed text to vector database',
     },
     findSimilar: {
-        method: 'GET',
+        method: 'POST',
         path: '/findSimilar',
-        query: FindSimilarQuery,
+        body: FindSimilarQuery,
         description: 'Find similiar text chunks',
         responses: {
             200: FindSimilarResponse,
